@@ -1,0 +1,55 @@
+{
+  "name": "vscode-date-md",
+  "displayName": "Date Markdown Creator",
+  "description": "現在の日付でMarkdownファイルを作成するVSCode拡張機能",
+  "version": "0.0.2",
+  "publisher": "ktgrryt",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "vscode-date-md.createDateMarkdown",
+        "title": "Create Date Markdown File"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "vscode-date-md.createDateMarkdown",
+        "key": "ctrl+m",
+        "mac": "cmd+m"
+      }
+    ],
+    "menus": {
+      "explorer/context": [
+        {
+          "command": "vscode-date-md.createDateMarkdown",
+          "group": "navigation"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.80.0",
+    "@types/node": "18.x",
+    "@typescript-eslint/eslint-plugin": "^6.4.1",
+    "@typescript-eslint/parser": "^6.4.1",
+    "eslint": "^8.47.0",
+    "typescript": "^5.1.6",
+    "@vscode/test-electron": "^2.3.4"
+  }
+}
