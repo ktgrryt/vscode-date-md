@@ -12,8 +12,38 @@ export function activate(context: vscode.ExtensionContext) {
 		'vscode-date-md.createDateMarkdown',
 		async (uri: vscode.Uri, allUris: vscode.Uri[]) => {
 			try {
-				// エクスプローラーから呼ばれた場合、uriが渡される
-				// キーボードショートカットから呼ばれた場合、uriはundefinedになる可能性がある
+				// キーボードショートカットから呼ばれた場合、uriはundefinedになる
+				// その場合は、クリップボードを使ってエクスプローラーの選択を取得する
+				if (!uri) {
+					// 現在のクリップボードの内容を保存
+					const originalClipboard = await vscode.env.clipboard.readText();
+					
+					// アクティブエディタのパスを取得（これは無視する）
+					const activeEditorPath = vscode.window.activeTextEditor?.document.uri.fsPath;
+					
+					try {
+						// copyFilePathコマンドを実行して、選択されたファイルのパスをクリップボードにコピー
+						await vscode.commands.executeCommand('copyFilePath');
+						
+						// クリップボードからパスを取得
+						const filePath = await vscode.env.clipboard.readText();
+						
+						// クリップボードを元に戻す
+						await vscode.env.clipboard.writeText(originalClipboard);
+						
+						// パスが取得できた場合、かつアクティブエディタのパスと異なる場合のみURIに変換
+						// （アクティブエディタのパスの場合は、エクスプローラーで選択していないと判断）
+						if (filePath &&
+						    filePath !== originalClipboard &&
+						    filePath !== activeEditorPath) {
+							uri = vscode.Uri.file(filePath);
+						}
+					} catch (error) {
+						// copyFilePathが失敗した場合は、元のクリップボードを復元
+						await vscode.env.clipboard.writeText(originalClipboard);
+					}
+				}
+				
 				await createDateMarkdownFile(uri);
 			} catch (error) {
 				const errorMessage = error instanceof Error ? error.message : String(error);
@@ -76,21 +106,14 @@ async function getUniqueFileName(dirUri: vscode.Uri, baseName: string): Promise<
  * 指定されたURIからディレクトリのURIを取得
  */
 async function getTargetDirectory(uri: vscode.Uri | undefined): Promise<vscode.Uri> {
-	// URIが指定されていない場合
+	// URIが指定されていない場合（キーバインドから実行された場合）
 	if (!uri) {
-		// アクティブなエディタのファイルを使用
-		const activeEditor = vscode.window.activeTextEditor;
-		if (activeEditor && activeEditor.document.uri.scheme === 'file') {
-			uri = activeEditor.document.uri;
+		// ワークスペースのルートフォルダを使用
+		const workspaceFolders = vscode.workspace.workspaceFolders;
+		if (workspaceFolders && workspaceFolders.length > 0) {
+			return workspaceFolders[0].uri;
 		} else {
-			// ワークスペースのルートフォルダを使用
-			const workspaceFolders = vscode.workspace.workspaceFolders;
-			if (workspaceFolders && workspaceFolders.length > 0) {
-				// 最初のワークスペースフォルダを使用
-				return workspaceFolders[0].uri;
-			} else {
-				throw new Error('ワークスペースが開かれていません');
-			}
+			throw new Error('ワークスペースが開かれていません');
 		}
 	}
 

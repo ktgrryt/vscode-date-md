@@ -2,7 +2,7 @@
   "name": "vscode-date-md",
   "displayName": "Date Markdown Creator",
   "description": "現在の日付でMarkdownファイルを作成するVSCode拡張機能",
-  "version": "0.0.2",
+  "version": "0.1.1",
   "publisher": "ktgrryt",
   "engines": {
     "vscode": "^1.80.0"
