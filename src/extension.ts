@@ -148,9 +148,12 @@ async function createDateMarkdownFile(uri: vscode.Uri | undefined): Promise<void
 	// 空のファイルを作成
 	await vscode.workspace.fs.writeFile(fileUri, new Uint8Array());
 
-	// ファイルをエディタで開く
+	// ファイルをエディタで開く（エクスプローラーのフォーカスを維持）
 	const document = await vscode.workspace.openTextDocument(fileUri);
-	await vscode.window.showTextDocument(document);
+	await vscode.window.showTextDocument(document, {
+		preserveFocus: true,
+		preview: false
+	});
 
 	// 成功メッセージを表示
 	vscode.window.showInformationMessage(`ファイルを作成しました: ${uniqueFileName}`);
